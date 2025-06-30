@@ -1,0 +1,31 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+  padding: 20px;
+}
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+input[type="text"], input[type="tel"], input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+  box-sizing: border-box;
+}
+button {
+  background: #2e86de;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+button:hover {
+  background: #1b4f72;
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>COOPEX ENTREGAS - Pedido</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>COOPEX ENTREGAS</h1>
+    <form id="pedidoForm">
+      <label>Nome do solicitante:</label>
+      <input type="text" id="nomeSolicitante" required />
+      <label>Telefone do solicitante:</label>
+      <input type="tel" id="telefoneSolicitante" required />
+
+      <h3>Endereço da Coleta</h3>
+      <label>CEP (opcional):</label>
+      <input type="text" id="cepColeta" />
+      <button type="button" onclick="buscarEndereco('Coleta')">Buscar Endereço</button>
+      <label>Rua:</label>
+      <input type="text" id="ruaColeta" />
+      <label>Número:</label>
+      <input type="text" id="numeroColeta" />
+      <label>Bairro:</label>
+      <input type="text" id="bairroColeta" />
+      <label>Cidade:</label>
+      <input type="text" id="cidadeColeta" />
+      <label>Complemento:</label>
+      <input type="text" id="complementoColeta" />
+      <label>Ponto de referência:</label>
+      <input type="text" id="referenciaColeta" />
+
+      <h3>Endereço da Entrega</h3>
+      <label>CEP (opcional):</label>
+      <input type="text" id="cepEntrega" />
+      <button type="button" onclick="buscarEndereco('Entrega')">Buscar Endereço</button>
+      <label>Rua:</label>
+      <input type="text" id="ruaEntrega" />
+      <label>Número:</label>
+      <input type="text" id="numeroEntrega" />
+      <label>Bairro:</label>
+      <input type="text" id="bairroEntrega" />
+      <label>Cidade:</label>
+      <input type="text" id="cidadeEntrega" />
+      <label>Complemento:</label>
+      <input type="text" id="complementoEntrega" />
+      <label>Ponto de referência:</label>
+      <input type="text" id="referenciaEntrega" />
+
+      <label>Nome de quem receberá:</label>
+      <input type="text" id="nomeRecebedor" />
+      <label>Telefone de quem receberá (opcional):</label>
+      <input type="tel" id="telefoneRecebedor" />
+
+      <label>Tipo de serviço:</label>
+      <div>
+        <label><input type="checkbox" value="Coleta/Entrega" /> Coleta/Entrega</label>
+        <label><input type="checkbox" value="Cartório" /> Cartório</label>
+        <label><input type="checkbox" value="Correios" /> Correios</label>
+        <label><input type="checkbox" value="Compras" /> Compras</label>
+        <label><input type="checkbox" id="outrosServico" /> Outros</label>
+        <input type="text" id="outrosDescricao" placeholder="Descreva se marcou 'Outros'" />
+      </div>
+
+      <label>Forma de pagamento:</label>
+      <div>
+        <label><input type="checkbox" value="Pix" /> Pix</label>
+        <label><input type="checkbox" value="Dinheiro" /> Dinheiro</label>
+        <label><input type="checkbox" value="Contrato" /> Contrato</label>
+      </div>
+
+      <label><input type="checkbox" id="temRetorno" /> Tem retorno de entrega</label>
+      <label><input type="radio" name="acao" value="Solicitar Motoboy" checked /> Solicitar Motoboy</label>
+      <label><input type="radio" name="acao" value="Orçamento" /> Apenas Orçamento</label>
+      <button type="button" onclick="enviarParaWhatsApp()">Enviar Pedido via WhatsApp</button>
+    </form>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
