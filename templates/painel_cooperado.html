@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Cooperado | COOPEX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+    body {
+        background: linear-gradient(120deg, #003399 0%, #0a185f 100%);
+        min-height: 100vh;
+        margin: 0;
+        font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    }
+    header {
+        background: #003399;
+        color: #fff;
+        padding: 1.2rem 1.5rem 1.7rem 1.2rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 18px #00339916;
+        position: sticky;
+        top: 0; left: 0; z-index: 9;
+    }
+    .logo-coopex-mini {
+        width: 44px;
+        height: 44px;
+        display: inline-block;
+        background: url('/static/coopex_logo.png') no-repeat center center;
+        background-size: contain;
+        border-radius: 50%;
+        margin-right: 15px;
+        margin-top: 6px;
+        box-shadow: 0 1px 10px #00339917;
+    }
+    header h1 {
+        margin: 0 1.2rem 0 0.2rem;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: .01em;
+        flex: 1;
+    }
+    .logout {
+        color: #fff;
+        background: #2355cb;
+        border-radius: 1.3rem;
+        padding: 0.5rem 1.3rem;
+        font-size: 1.05rem;
+        text-decoration: none;
+        font-weight: bold;
+        margin-left: auto;
+        transition: background 0.15s;
+    }
+    .logout:hover {
+        background: #001c50;
+    }
+    main {
+        margin-top: 24px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .list-section {
+        background: #f5faffee;
+        margin: 1.5rem auto 2.4rem auto;
+        padding: 1.4rem 2.1rem 2.2rem 2.1rem;
+        border-radius: 1.5rem;
+        max-width: 900px;
+        box-shadow: 0 1px 16px #00339910;
+        animation: fadeIn .95s;
+    }
+    .list-section h2 {
+        color: #003399;
+        margin-top: 0.2rem;
+        font-size: 1.19rem;
+        margin-bottom: 0.5rem;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.2rem;
+        background: #eaf2fd;
+        border-radius: 1.1rem;
+        overflow: hidden;
+        box-shadow: 0 0 8px #00339911;
+        font-size: 1.03rem;
+        animation: fadeInTable .8s;
+    }
+    th, td {
+        padding: 0.58rem 0.5rem;
+        border-bottom: 1px solid #d3e0f7;
+        text-align: left;
+    }
+    th {
+        background: #003399;
+        color: #fff;
+        font-weight: 600;
+    }
+    tr:last-child td {
+        border-bottom: none;
+    }
+    .resumo-box {
+        background: #003399;
+        color: #fff;
+        padding: 1.2rem 1.3rem 1rem 1.3rem;
+        border-radius: 1.2rem;
+        box-shadow: 0 2px 12px #00339922;
+        margin-bottom: 1.4rem;
+        font-size: 1.08rem;
+        font-weight: 500;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+        animation: fadeIn .8s;
+    }
+    .resumo-label { font-weight: 700; letter-spacing: 0.03em;}
+    .valor-positivo { color: #b6ffd6; }
+    .valor-negativo { color: #ffd0d6; }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(24px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    @keyframes fadeInTable {
+        from { opacity: 0; transform: translateY(16px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    @media (max-width: 900px) {
+        .list-section {padding: 1.1rem 0.3rem;}
+        main {margin-top: 10px;}
+        .resumo-box {padding: 0.7rem 0.7rem;}
+        table th, table td { font-size: 0.95em;}
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-coopex-mini"></div>
+        <h1>Painel Cooperado - COOPEX</h1>
+        <a href="{{ url_for('logout') }}" class="logout">Sair</a>
+    </header>
+    <main>
+        <section class="list-section">
+            <h2>Seus Lançamentos</h2>
+            <div class="resumo-box">
+                <div class="resumo-label">Total de Valores:</div>
+                <span class="valor-positivo">
+                R$
+                {{
+                    "%.2f"|format(
+                        valores|selectattr('tipo','equalto','valor')|map(attribute='valor')|sum
+                    )
+                }}
+                </span>
+                <div class="resumo-label">Total de Descontos:</div>
+                <span class="valor-negativo">
+                R$
+                {{
+                    "%.2f"|format(
+                        valores|selectattr('tipo','equalto','desconto')|map(attribute='valor')|sum
+                    )
+                }}
+                </span>
+                <div class="resumo-label">Total Líquido:</div>
+                <span style="font-size:1.20em;">
+                R$
+                {{
+                    "%.2f"|format(
+                        (valores|selectattr('tipo','equalto','valor')|map(attribute='valor')|sum) -
+                        (valores|selectattr('tipo','equalto','desconto')|map(attribute='valor')|sum)
+                    )
+                }}
+                </span>
+            </div>
+            <table>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Turno</th>
+                    <th>Lançado por</th>
+                </tr>
+                {% for v in valores %}
+                <tr>
+                    <td>{{ v.data.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        {% if v.tipo == 'desconto' %}
+                            Desconto
+                        {% elif v.cooperado_id is none and v.admin_id %}
+                            Valor para admin - {{ v.admin.nome if v.admin else '' }}
+                        {% else %}
+                            Valor
+                        {% endif %}
+                    </td>
+                    <td>R$ {{ "%.2f"|format(v.valor) }}</td>
+                    <td>{{ v.turno }}</td>
+                    <td>{{ v.criador.nome if v.criador else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </section>
+    </main>
+    <script>
+    // Espaço para futuras interatividades
+    </script>
+</body>
+</html>

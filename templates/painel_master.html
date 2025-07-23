@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Master | COOPEX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+    body {
+        background: linear-gradient(120deg, #003399 0%, #0a185f 100%);
+        min-height: 100vh;
+        margin: 0;
+        font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    }
+    header {
+        background: #003399;
+        color: #fff;
+        padding: 1.2rem 1.5rem 1.7rem 1.2rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 18px #00339916;
+        position: sticky;
+        top: 0; left: 0; z-index: 9;
+    }
+    .logo-coopex-mini {
+        width: 44px;
+        height: 44px;
+        display: inline-block;
+        background: url('/static/coopex_logo.png') no-repeat center center;
+        background-size: contain;
+        border-radius: 50%;
+        margin-right: 15px;
+        margin-top: 6px;
+        box-shadow: 0 1px 10px #00339917;
+    }
+    header h1 {
+        margin: 0 1.2rem 0 0.2rem;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: .01em;
+        flex: 1;
+    }
+    .logout {
+        color: #fff;
+        background: #2355cb;
+        border-radius: 1.3rem;
+        padding: 0.5rem 1.3rem;
+        font-size: 1.05rem;
+        text-decoration: none;
+        font-weight: bold;
+        margin-left: auto;
+        transition: background 0.15s;
+    }
+    .logout:hover {
+        background: #001c50;
+    }
+    .panel-menu {
+        display: flex;
+        gap: 1.1rem;
+        margin: 2rem auto 1.2rem auto;
+        max-width: 900px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .btn-primary {
+        padding: 0.68rem 1.5rem;
+        background: linear-gradient(90deg, #003399 60%, #0a185f 100%);
+        color: #fff;
+        border: none;
+        border-radius: 1.2rem;
+        font-size: 1.09rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.18s;
+        box-shadow: 0 2px 10px #00339924;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 0.3rem;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #1843b7 60%, #233278 100%);
+        transform: scale(1.04);
+    }
+    main {
+        margin-top: 24px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .list-section {
+        background: #f5faffee;
+        margin: 1.1rem auto 2rem auto;
+        padding: 1.4rem 2.1rem 2.2rem 2.1rem;
+        border-radius: 1.5rem;
+        max-width: 920px;
+        box-shadow: 0 1px 16px #00339910;
+        animation: fadeIn .95s;
+    }
+    .list-section h2 {
+        color: #003399;
+        margin-top: 0.2rem;
+        font-size: 1.19rem;
+        margin-bottom: 0.5rem;
+    }
+    .list-section ul {
+        padding-left: 1.1rem;
+        margin-top: 0.2rem;
+        margin-bottom: 1.2rem;
+    }
+    .list-section li {
+        margin: 0.18rem 0;
+        font-size: 1.07rem;
+        line-height: 1.46;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.2rem;
+        background: #eaf2fd;
+        border-radius: 1.1rem;
+        overflow: hidden;
+        box-shadow: 0 0 8px #00339911;
+        font-size: 1.03rem;
+        animation: fadeInTable .8s;
+    }
+    th, td {
+        padding: 0.58rem 0.5rem;
+        border-bottom: 1px solid #d3e0f7;
+        text-align: left;
+    }
+    th {
+        background: #003399;
+        color: #fff;
+        font-weight: 600;
+    }
+    tr:last-child td {
+        border-bottom: none;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(24px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    @keyframes fadeInTable {
+        from { opacity: 0; transform: translateY(16px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    @media (max-width: 700px) {
+        .list-section {padding: 1.1rem 0.4rem;}
+        main {margin-top: 12px;}
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-coopex-mini"></div>
+        <h1>Painel Master - COOPEX</h1>
+        <a href="{{ url_for('logout') }}" class="logout">Sair</a>
+    </header>
+    <main>
+        <div class="panel-menu">
+            <a href="{{ url_for('cadastro_admin') }}" class="btn-primary">Novo Admin</a>
+            <a href="{{ url_for('cadastro_cooperado') }}" class="btn-primary">Novo Cooperado</a>
+            <a href="{{ url_for('cadastro_valor') }}" class="btn-primary">Lançar Valor/Desconto</a>
+        </div>
+        <section class="list-section">
+            <h2>Admins</h2>
+            <ul>
+            {% for a in admins %}
+                <li>
+                    <b>{{ a.nome }}</b> (usuário: {{ a.username }})<br>
+                    Intervalo: {{ dias_label.get(a.intervalo_inicio, '-') }} a {{ dias_label.get(a.intervalo_fim, '-') }}
+                </li>
+            {% else %}
+                <li>Nenhum admin cadastrado.</li>
+            {% endfor %}
+            </ul>
+            <h2>Cooperados</h2>
+            <ul>
+            {% for c in cooperados %}
+                <li>
+                    <b>{{ c.nome }}</b> (usuário: {{ c.username }})
+                </li>
+            {% else %}
+                <li>Nenhum cooperado cadastrado.</li>
+            {% endfor %}
+            </ul>
+        </section>
+        <section class="list-section">
+            <h2>Todos os Lançamentos</h2>
+            <table>
+                <tr>
+                    <th>Data</th><th>Cooperado</th><th>Admin/Responsável</th><th>Tipo</th><th>Valor</th><th>Turno</th>
+                </tr>
+                {% for v in valores %}
+                <tr>
+                    <td>{{ v.data.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ v.cooperado.nome if v.cooperado else '-' }}</td>
+                    <td>{{ v.criador.nome if v.criador else '-' }}</td>
+                    <td>{{ v.tipo|capitalize }}</td>
+                    <td>R$ {{ "%.2f"|format(v.valor) }}</td>
+                    <td>{{ v.turno }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">Nenhum lançamento encontrado.</td></tr>
+                {% endfor %}
+            </table>
+        </section>
+        <section class="list-section">
+          <h2>Relatório de Lançamentos por Admin (Separados)</h2>
+          {% for admin, dados in relatorio_admins.items() %}
+            <div style="background: #eaf2fd; border-radius: 1.2rem; margin-bottom: 2rem; padding: 1rem 1.3rem; box-shadow:0 1px 8px #00339918;">
+              <h3 style="color: #003399; margin-top:0;">{{ admin.nome }} ({{ admin.username }})</h3>
+              <div style="margin:0.6rem 0 1rem 0;">
+                <b>Total Valores:</b> R$ {{ "%.2f"|format(dados.total_valor) }} &nbsp;&nbsp; 
+                <b>Total Descontos:</b> R$ {{ "%.2f"|format(dados.total_desconto) }} &nbsp;&nbsp;
+                <b>Total Líquido:</b> <span style="color:#005c1c">{{ "%.2f"|format(dados.total_liquido) }}</span>
+              </div>
+              <div style="margin-bottom:0.7rem;">
+                <b>Lançamentos de Valor:</b>
+              </div>
+              <table>
+                <tr>
+                  <th>Data</th>
+                  <th>Cooperado</th>
+                  <th>Valor</th>
+                  <th>Turno</th>
+                </tr>
+                {% set tem_valor = false %}
+                {% for v in dados.lancamentos if v.tipo == 'valor' %}
+                {% set tem_valor = true %}
+                <tr>
+                  <td>{{ v.data.strftime('%d/%m/%Y') }}</td>
+                  <td>{{ v.cooperado.nome if v.cooperado else '-' }}</td>
+                  <td>R$ {{ "%.2f"|format(v.valor) }}</td>
+                  <td>{{ v.turno }}</td>
+                </tr>
+                {% endfor %}
+                {% if not tem_valor %}
+                <tr><td colspan="4">Nenhum lançamento de valor deste admin.</td></tr>
+                {% endif %}
+              </table>
+              <div style="margin:1.3rem 0 0.4rem 0;">
+                <b>Descontos:</b>
+              </div>
+              <table>
+                <tr>
+                  <th>Data</th>
+                  <th>Cooperado</th>
+                  <th>Valor do Desconto</th>
+                  <th>Turno</th>
+                </tr>
+                {% set tem_desc = false %}
+                {% for v in dados.lancamentos if v.tipo == 'desconto' %}
+                {% set tem_desc = true %}
+                <tr>
+                  <td>{{ v.data.strftime('%d/%m/%Y') }}</td>
+                  <td>{{ v.cooperado.nome if v.cooperado else '-' }}</td>
+                  <td>R$ {{ "%.2f"|format(v.valor) }}</td>
+                  <td>{{ v.turno }}</td>
+                </tr>
+                {% endfor %}
+                {% if not tem_desc %}
+                <tr><td colspan="4">Nenhum desconto lançado por este admin.</td></tr>
+                {% endif %}
+              </table>
+            </div>
+          {% endfor %}
+        </section>
+    </main>
+</body>
+</html>
