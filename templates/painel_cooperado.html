@@ -1,207 +1,273 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Painel Cooperado | COOPEX</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <style>
-    body {
-        background: linear-gradient(120deg, #003399 0%, #0a185f 100%);
-        min-height: 100vh;
-        margin: 0;
-        font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+<meta charset="UTF-8" />
+<title>Painel Cooperado | COOPEX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #001f7a 0%, #004aad 100%);
+    color: #f0f4ff;
+    min-height: 100vh;
+  }
+  header {
+    background: #002e9c;
+    padding: 1.5rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.35);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  .logo-coopex {
+    width: 60px;
+    height: 60px;
+    background: url('/static/coopex_logo.png') no-repeat center center;
+    background-size: contain;
+    border-radius: 50%;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.35);
+    border: 2.5px solid #ffdb4d;
+  }
+  header h1 {
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: 0.04em;
+    text-shadow: 1px 1px 3px #001e6c;
+    margin: 0;
+  }
+  .logout {
+    background: #ffcc00;
+    color: #002b80;
+    font-weight: 900;
+    font-size: 1.2rem;
+    padding: 0.75rem 2rem;
+    border-radius: 40px;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgb(255 204 0 / 0.7);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .logout:hover {
+    background: #e6b800;
+    box-shadow: 0 8px 26px rgb(230 184 0 / 0.9);
+  }
+  .container {
+    max-width: 1250px;
+    margin: 3rem auto 4rem auto;
+    background: #0a2c82;
+    border-radius: 25px;
+    padding: 40px 50px;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.5);
+    color: #e2e8f0;
+  }
+  h2 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 1.8rem;
+    border-bottom: 3.5px solid #ffdb4d;
+    padding-bottom: 0.3rem;
+  }
+  form#filterForm {
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+  form#filterForm label {
+    font-weight: 900;
+    font-size: 1.1rem;
+  }
+  form#filterForm input[type="date"] {
+    padding: 0.6rem 1rem;
+    border-radius: 40px;
+    border: 2px solid #ffdb4d;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #002b80;
+    min-width: 160px;
+  }
+  form#filterForm button {
+    background: #ffdb4d;
+    color: #002b80;
+    font-weight: 900;
+    padding: 0.8rem 2.5rem;
+    border-radius: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 7px 22px rgb(255 219 77 / 0.7);
+    border: none;
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+  }
+  form#filterForm button:hover {
+    background: #f2c500;
+    box-shadow: 0 10px 30px rgb(242 197 0 / 0.85);
+    transform: scale(1.05);
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 1rem;
+  }
+  th, td {
+    padding: 1.3rem 1.6rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  th {
+    background: #183c8a;
+    color: #ffdb4d;
+    text-align: left;
+    border-radius: 12px 12px 0 0;
+    letter-spacing: 0.02em;
+  }
+  tbody tr {
+    background: #122a7a;
+    border-radius: 15px;
+    box-shadow: 0 4px 18px rgb(0 0 0 / 0.55);
+    transition: box-shadow 0.25s ease;
+  }
+  tbody tr:hover {
+    box-shadow: 0 8px 30px rgb(255 219 77 / 0.6);
+  }
+  tbody tr td:first-child {
+    border-radius: 15px 0 0 15px;
+  }
+  tbody tr td:last-child {
+    border-radius: 0 15px 15px 0;
+  }
+  .actions {
+    display: flex;
+    gap: 1rem;
+  }
+  .success {
+    background: #d4f8d4;
+    color: #004d00;
+    padding: 1.2rem 1.5rem;
+    border-radius: 18px;
+    margin-bottom: 2rem;
+    font-weight: 900;
+    box-shadow: 0 5px 20px rgb(20 100 20 / 0.5);
+    font-size: 1.15rem;
+  }
+
+  /* Responsividade */
+  @media (max-width: 900px) {
+    .actions {
+      flex-wrap: wrap;
+      gap: 0.7rem;
     }
-    header {
-        background: #003399;
-        color: #fff;
-        padding: 1.2rem 1.5rem 1.7rem 1.2rem;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 2px 18px #00339916;
-        position: sticky;
-        top: 0; left: 0; z-index: 9;
+  }
+  @media (max-width: 720px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+      width: 100%;
     }
-    .logo-coopex-mini {
-        width: 44px;
-        height: 44px;
-        display: inline-block;
-        background: url('/static/coopex_logo.png') no-repeat center center;
-        background-size: contain;
-        border-radius: 50%;
-        margin-right: 15px;
-        margin-top: 6px;
-        box-shadow: 0 1px 10px #00339917;
+    thead tr {
+      display: none;
     }
-    header h1 {
-        margin: 0 1.2rem 0 0.2rem;
-        font-size: 1.35rem;
-        font-weight: 700;
-        letter-spacing: .01em;
-        flex: 1;
+    tbody tr {
+      margin-bottom: 1.4rem;
+      padding: 1.3rem;
+      border-radius: 20px;
+      background: #122a7a;
+      box-shadow: 0 8px 30px rgb(255 219 77 / 0.7);
     }
-    .logout {
-        color: #fff;
-        background: #2355cb;
-        border-radius: 1.3rem;
-        padding: 0.5rem 1.3rem;
-        font-size: 1.05rem;
-        text-decoration: none;
-        font-weight: bold;
-        margin-left: auto;
-        transition: background 0.15s;
+    tbody tr td {
+      padding-left: 55%;
+      position: relative;
+      text-align: right;
+      font-size: 1rem;
     }
-    .logout:hover {
-        background: #001c50;
+    tbody tr td::before {
+      position: absolute;
+      left: 1.4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 900;
+      content: attr(data-label);
+      color: #ffdb4d;
+      font-size: 1rem;
+      white-space: nowrap;
+      text-transform: uppercase;
     }
-    main {
-        margin-top: 24px;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    tbody tr td:last-child {
+      border-radius: 0 20px 20px 0;
     }
-    .list-section {
-        background: #f5faffee;
-        margin: 1.5rem auto 2.4rem auto;
-        padding: 1.4rem 2.1rem 2.2rem 2.1rem;
-        border-radius: 1.5rem;
-        max-width: 900px;
-        box-shadow: 0 1px 16px #00339910;
-        animation: fadeIn .95s;
-    }
-    .list-section h2 {
-        color: #003399;
-        margin-top: 0.2rem;
-        font-size: 1.19rem;
-        margin-bottom: 0.5rem;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1.2rem;
-        background: #eaf2fd;
-        border-radius: 1.1rem;
-        overflow: hidden;
-        box-shadow: 0 0 8px #00339911;
-        font-size: 1.03rem;
-        animation: fadeInTable .8s;
-    }
-    th, td {
-        padding: 0.58rem 0.5rem;
-        border-bottom: 1px solid #d3e0f7;
-        text-align: left;
-    }
-    th {
-        background: #003399;
-        color: #fff;
-        font-weight: 600;
-    }
-    tr:last-child td {
-        border-bottom: none;
-    }
-    .resumo-box {
-        background: #003399;
-        color: #fff;
-        padding: 1.2rem 1.3rem 1rem 1.3rem;
-        border-radius: 1.2rem;
-        box-shadow: 0 2px 12px #00339922;
-        margin-bottom: 1.4rem;
-        font-size: 1.08rem;
-        font-weight: 500;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.2rem;
-        animation: fadeIn .8s;
-    }
-    .resumo-label { font-weight: 700; letter-spacing: 0.03em;}
-    .valor-positivo { color: #b6ffd6; }
-    .valor-negativo { color: #ffd0d6; }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(24px);}
-        to { opacity: 1; transform: translateY(0);}
-    }
-    @keyframes fadeInTable {
-        from { opacity: 0; transform: translateY(16px);}
-        to { opacity: 1; transform: translateY(0);}
-    }
-    @media (max-width: 900px) {
-        .list-section {padding: 1.1rem 0.3rem;}
-        main {margin-top: 10px;}
-        .resumo-box {padding: 0.7rem 0.7rem;}
-        table th, table td { font-size: 0.95em;}
-    }
-    </style>
+  }
+</style>
 </head>
 <body>
-    <header>
-        <div class="logo-coopex-mini"></div>
-        <h1>Painel Cooperado - COOPEX</h1>
-        <a href="{{ url_for('logout') }}" class="logout">Sair</a>
-    </header>
-    <main>
-        <section class="list-section">
-            <h2>Seus Lançamentos</h2>
-            <div class="resumo-box">
-                <div class="resumo-label">Total de Valores:</div>
-                <span class="valor-positivo">
-                R$
-                {{
-                    "%.2f"|format(
-                        valores|selectattr('tipo','equalto','valor')|map(attribute='valor')|sum
-                    )
-                }}
-                </span>
-                <div class="resumo-label">Total de Descontos:</div>
-                <span class="valor-negativo">
-                R$
-                {{
-                    "%.2f"|format(
-                        valores|selectattr('tipo','equalto','desconto')|map(attribute='valor')|sum
-                    )
-                }}
-                </span>
-                <div class="resumo-label">Total Líquido:</div>
-                <span style="font-size:1.20em;">
-                R$
-                {{
-                    "%.2f"|format(
-                        (valores|selectattr('tipo','equalto','valor')|map(attribute='valor')|sum) -
-                        (valores|selectattr('tipo','equalto','desconto')|map(attribute='valor')|sum)
-                    )
-                }}
-                </span>
-            </div>
-            <table>
-                <tr>
-                    <th>Data</th>
-                    <th>Descrição</th>
-                    <th>Valor</th>
-                    <th>Turno</th>
-                    <th>Lançado por</th>
-                </tr>
-                {% for v in valores %}
-                <tr>
-                    <td>{{ v.data.strftime('%d/%m/%Y') }}</td>
-                    <td>
-                        {% if v.tipo == 'desconto' %}
-                            Desconto
-                        {% elif v.cooperado_id is none and v.admin_id %}
-                            Valor para admin - {{ v.admin.nome if v.admin else '' }}
-                        {% else %}
-                            Valor
-                        {% endif %}
-                    </td>
-                    <td>R$ {{ "%.2f"|format(v.valor) }}</td>
-                    <td>{{ v.turno }}</td>
-                    <td>{{ v.criador.nome if v.criador else '-' }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </section>
-    </main>
-    <script>
-    // Espaço para futuras interatividades
-    </script>
+<header>
+  <div class="header-left">
+    <div class="logo-coopex"></div>
+    <h1>Painel Cooperado - COOPEX</h1>
+  </div>
+  <a href="{{ url_for('logout') }}" class="logout">Sair</a>
+</header>
+
+<div class="container">
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="success">{{ messages[0] }}</div>
+    {% endif %}
+  {% endwith %}
+
+  <form id="filterForm" method="get" action="{{ url_for('painel_cooperado') }}">
+    <label for="data_inicio">Data Início:</label>
+    <input type="date" id="data_inicio" name="data_inicio" value="{{ request.args.get('data_inicio', '') }}" required>
+
+    <label for="data_fim">Data Fim:</label>
+    <input type="date" id="data_fim" name="data_fim" value="{{ request.args.get('data_fim', '') }}" required>
+
+    <button type="submit">Filtrar</button>
+  </form>
+
+  <h2>Produção e Descontos</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Turno</th>
+        <th>Tipo</th>
+        <th>Contrato</th>
+        <th>Valor (R$)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set total_valor = 0 %}
+      {% for v in valores %}
+      <tr>
+        <td data-label="Data">{{ v.data.strftime('%d/%m/%Y') }}</td>
+        <td data-label="Turno">{{ v.turno }}</td>
+        <td data-label="Tipo">{{ v.tipo }}</td>
+        <td data-label="Contrato">{{ v.tipo_lancamento.nome if v.tipo_lancamento else '' }}</td>
+        <td data-label="Valor">R$ {{ "%.2f"|format(v.valor) }}</td>
+      </tr>
+      {% set total_valor = total_valor + v.valor %}
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr style="background:#0f3a9a; font-weight:900; font-size:1.2rem; color:#ffdb4d;">
+        <td colspan="4">Total Geral</td>
+        <td>R$ {{ "%.2f"|format(total_valor) }}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+</div>
 </body>
 </html>

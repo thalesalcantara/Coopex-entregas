@@ -79,6 +79,44 @@
     border-bottom: 3.5px solid #ffdb4d;
     padding-bottom: 0.3rem;
   }
+  form#filterForm {
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+  form#filterForm label {
+    font-weight: 900;
+    font-size: 1.1rem;
+  }
+  form#filterForm input[type="date"],
+  form#filterForm select {
+    padding: 0.6rem 1rem;
+    border-radius: 40px;
+    border: 2px solid #ffdb4d;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #002b80;
+    min-width: 160px;
+  }
+  form#filterForm button {
+    background: #ffdb4d;
+    color: #002b80;
+    font-weight: 900;
+    padding: 0.8rem 2.5rem;
+    border-radius: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 7px 22px rgb(255 219 77 / 0.7);
+    border: none;
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+  }
+  form#filterForm button:hover {
+    background: #f2c500;
+    box-shadow: 0 10px 30px rgb(242 197 0 / 0.85);
+    transform: scale(1.05);
+  }
   .novo-btn {
     background: #ffdb4d;
     color: #002b80;
@@ -238,11 +276,31 @@
 </header>
 
 <div class="container">
+
   {% with messages = get_flashed_messages() %}
     {% if messages %}
       <div class="success">{{ messages[0] }}</div>
     {% endif %}
   {% endwith %}
+
+  <!-- FILTRO -->
+  <form id="filterForm" method="get" action="{{ url_for('painel_master') }}">
+    <label for="data_inicio">Data Início:</label>
+    <input type="date" name="data_inicio" id="data_inicio" value="{{ request.args.get('data_inicio', '') }}" required>
+
+    <label for="data_fim">Data Fim:</label>
+    <input type="date" name="data_fim" id="data_fim" value="{{ request.args.get('data_fim', '') }}" required>
+
+    <label for="cooperado_id">Cooperado:</label>
+    <select name="cooperado_id" id="cooperado_id">
+      <option value="" {% if not request.args.get('cooperado_id') %}selected{% endif %}>Todos</option>
+      {% for c in cooperados %}
+        <option value="{{ c.id }}" {% if request.args.get('cooperado_id') == str(c.id) %}selected{% endif %}>{{ c.nome }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit">Filtrar</button>
+  </form>
 
   <h2>Contratos</h2>
   <a href="{{ url_for('cadastro_admin') }}" class="novo-btn">Novo Contrato</a>
@@ -320,7 +378,7 @@
     {% endfor %}
   </ul>
 
-  <h2>Lançamentos (Valores e Descontos)</h2>
+  <h2>Lançamentos (Produção e Desconto)</h2>
   <a href="{{ url_for('cadastro_valor') }}" class="novo-btn" style="margin-bottom:1.6rem;display:inline-block;">Novo Lançamento</a>
   <table>
     <thead>
@@ -331,24 +389,34 @@
       </tr>
     </thead>
     <tbody>
+      {% set total_valor = 0 %}
       {% for v in valores %}
-      <tr>
-        <td data-label="Data">{{ v.data.strftime('%d/%m/%Y') }}</td>
-        <td data-label="Turno">{{ v.turno }}</td>
-        <td data-label="Cooperado">{{ v.cooperado.nome }}</td>
-        <td data-label="Tipo">{{ v.tipo }}</td>
-        <td data-label="Contrato">{{ v.tipo_lancamento.nome if v.tipo_lancamento else '' }}</td>
-        <td data-label="Valor">R$ {{ "%.2f"|format(v.valor) }}</td>
-        <td data-label="Lançado por">{{ v.criador.nome if v.criador else '' }}</td>
-        <td data-label="Ações" class="actions">
-          <a href="{{ url_for('editar_valor', valor_id=v.id) }}" class="btn-edit">Editar</a>
-          <form method="post" action="{{ url_for('excluir_valor', valor_id=v.id) }}" class="inline" onsubmit="return confirm('Excluir este lançamento?');">
-            <button type="submit" class="btn-danger">Excluir</button>
-          </form>
-        </td>
-      </tr>
+        {% if (not request.args.get('cooperado_id') or request.args.get('cooperado_id') == str(v.cooperado.id)) %}
+          <tr>
+            <td data-label="Data">{{ v.data.strftime('%d/%m/%Y') }}</td>
+            <td data-label="Turno">{{ v.turno }}</td>
+            <td data-label="Cooperado">{{ v.cooperado.nome }}</td>
+            <td data-label="Tipo">{{ v.tipo }}</td>
+            <td data-label="Contrato">{{ v.tipo_lancamento.nome if v.tipo_lancamento else '' }}</td>
+            <td data-label="Valor">R$ {{ "%.2f"|format(v.valor) }}</td>
+            <td data-label="Lançado por">{{ v.criador.nome if v.criador else '' }}</td>
+            <td data-label="Ações" class="actions">
+              <a href="{{ url_for('editar_valor', valor_id=v.id) }}" class="btn-edit">Editar</a>
+              <form method="post" action="{{ url_for('excluir_valor', valor_id=v.id) }}" class="inline" onsubmit="return confirm('Excluir este lançamento?');">
+                <button type="submit" class="btn-danger">Excluir</button>
+              </form>
+            </td>
+          </tr>
+          {% set total_valor = total_valor + v.valor %}
+        {% endif %}
       {% endfor %}
     </tbody>
+    <tfoot>
+      <tr style="background:#0f3a9a; font-weight:900; font-size:1.2rem; color:#ffdb4d;">
+        <td colspan="5">Total Geral</td>
+        <td colspan="3">R$ {{ "%.2f"|format(total_valor) }}</td>
+      </tr>
+    </tfoot>
   </table>
 </div>
 </body>
