@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastrar Admin | COOPEX</title>
+    <title>Editar Contrato (Tipo) | COOPEX</title>
     <style>
         body { background: linear-gradient(120deg, #003399 0%, #0a185f 100%); font-family: 'Segoe UI', Arial, sans-serif;}
         .container { max-width: 480px; margin: 40px auto; background: #fff; border-radius: 18px; box-shadow: 0 8px 40px #00339928; padding: 32px;}
@@ -18,7 +18,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>Cadastrar Admin</h1>
+    <h1>Editar Contrato</h1>
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <div class="success">{{ messages[0] }}</div>
@@ -26,25 +26,13 @@
     {% endwith %}
     <form method="post" autocomplete="off">
         <label for="nome">Nome</label>
-        <input type="text" name="nome" required maxlength="100">
-        <label for="username">Usuário</label>
-        <input type="text" name="username" required maxlength="50">
-        <label for="senha">Senha</label>
-        <input type="password" name="senha" required maxlength="50">
-        <label>Intervalo (dias de atuação)</label>
-        <select name="intervalo_inicio" required>
-            <option value="" disabled selected>Início</option>
-            {% for k,v in dias_label.items() %}
-                <option value="{{k}}">{{v}}</option>
-            {% endfor %}
+        <input type="text" name="nome" value="{{ tipo.nome }}" required maxlength="100">
+        <label for="tipo">Tipo</label>
+        <select name="tipo" required>
+            <option value="valor" {% if tipo.tipo == "valor" %}selected{% endif %}>Valor</option>
+            <option value="desconto" {% if tipo.tipo == "desconto" %}selected{% endif %}>Desconto</option>
         </select>
-        <select name="intervalo_fim" required>
-            <option value="" disabled selected>Fim</option>
-            {% for k,v in dias_label.items() %}
-                <option value="{{k}}">{{v}}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Cadastrar</button>
+        <button type="submit">Salvar Alterações</button>
     </form>
 </div>
 </body>

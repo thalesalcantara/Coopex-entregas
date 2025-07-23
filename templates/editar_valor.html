@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Lançamento | COOPEX</title>
+    <style>
+        body { background: linear-gradient(120deg, #003399 0%, #0a185f 100%); font-family: 'Segoe UI', Arial, sans-serif; color: #0a185f;}
+        .container { max-width: 500px; margin: 40px auto; background: #fff; border-radius: 18px; box-shadow: 0 8px 40px #00339928; padding: 32px;}
+        h1 { color: #003399; margin-bottom: 1.5rem;}
+        label { color: #003399; margin-top: 12px; font-weight:600;}
+        input, select { width: 100%; padding: 9px; border-radius: 12px; border: 1px solid #c3d1ee; font-size: 1.08rem;}
+        button { background: #003399; color: #fff; border: none; border-radius: 1rem; padding: 0.5rem 2rem; font-size: 1.12rem; font-weight:700; margin-top: 16px;}
+        button:hover { background: #0a185f;}
+        .success, .danger { padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 1rem;}
+        .success { background: #e3ffe6; color: #197a3d;}
+        .danger { background: #ffdede; color: #a31212;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Editar Lançamento</h1>
+    <form method="post" id="valorForm">
+        <label for="cooperado_id">Selecione o Cooperado</label>
+        <select name="cooperado_id" required>
+        {% for c in cooperados %}
+          <option value="{{ c.id }}" {% if valor.cooperado_id==c.id %}selected{% endif %}>{{ c.nome }}</option>
+        {% endfor %}
+        </select>
+        <label>Data:</label>
+        <input type="date" name="data" required value="{{ valor.data.strftime('%Y-%m-%d') }}">
+        <label>Turno:</label>
+        <input type="text" name="turno" required value="{{ valor.turno }}">
+        <label>Tipo:</label>
+        <select name="tipo" id="tipo" required onchange="toggleTipo()">
+            <option value="valor" {% if valor.tipo=="valor" %}selected{% endif %}>Valor</option>
+            <option value="desconto" {% if valor.tipo=="desconto" %}selected{% endif %}>Desconto</option>
+        </select>
+        <div id="valor-nome-div" style="display:{{ 'block' if valor.tipo=='valor' else 'none' }}">
+          <label>Nome do Valor:</label>
+          <select name="tipo_lancamento_valor">
+            {% for v in tipos_valor %}
+            <option value="{{ v.id }}" {% if valor.tipo_lancamento_id==v.id %}selected{% endif %}>{{ v.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div id="desconto-nome-div" style="display:{{ 'block' if valor.tipo=='desconto' else 'none' }}">
+          <label>Nome do Desconto:</label>
+          <select name="tipo_lancamento_desconto">
+            {% for d in tipos_desconto %}
+            <option value="{{ d.id }}" {% if valor.tipo_lancamento_id==d.id %}selected{% endif %}>{{ d.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <label>Valor (R$):</label>
+        <input type="text" name="valor" required value="R$ {{ '%.2f'|format(valor.valor) }}">
+        <button type="submit">Salvar</button>
+    </form>
+</div>
+<script>
+function toggleTipo() {
+    var tipo = document.getElementById("tipo").value;
+    document.getElementById("valor-nome-div").style.display = tipo == "valor" ? "block" : "none";
+    document.getElementById("desconto-nome-div").style.display = tipo == "desconto" ? "block" : "none";
+}
+// Máscara R$ igual ao cadastrar
+const valorInput = document.querySelector('input[name="valor"]');
+valorInput.addEventListener('input', function(e){
+    let cursor = this.selectionStart;
+    let val = this.value.replace(/\D/g,'');
+    if(val === "") val = "0";
+    val = (parseFloat(val)/100).toFixed(2).replace('.',',');
+    let partes = val.split(',');
+    let inteiro = partes[0];
+    let decimal = partes[1];
+    inteiro = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    this.value = "R$ " + inteiro + ',' + decimal;
+    setTimeout(() => { this.setSelectionRange(this.value.length, this.value.length); }, 1);
+});
+document.getElementById('valorForm').addEventListener('submit', function(e){
+    let val = valorInput.value.replace(/[R$\s.]/g, '').replace(',','.');
+    valorInput.value = val;
+});
+</script>
+</body>
+</html>

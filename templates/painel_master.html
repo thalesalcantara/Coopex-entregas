@@ -1,138 +1,355 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Painel Master | COOPEX</title>
-    <style>
-        body { background: linear-gradient(120deg, #003399 0%, #0a185f 100%); font-family: 'Segoe UI', Arial, sans-serif; color: #0a185f;}
-        .container { max-width: 1200px; margin: 40px auto; background: #fff; border-radius: 18px; box-shadow: 0 8px 40px #00339928; padding: 32px;}
-        h1, h2, h3 { color: #003399; margin-bottom: 1rem;}
-        table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; background: #f8faff;}
-        th, td { border: 1px solid #e6e6e6; padding: 10px 12px; text-align: left;}
-        th { background: #e6f0ff;}
-        tr:nth-child(even) { background: #f7fafd;}
-        .btn-danger { background: #be2020; color: #fff; border: none; padding: 0.3rem 1.1rem; border-radius: 1rem; font-weight: 600; cursor: pointer;}
-        .btn-danger:hover { background: #7b1212;}
-        .btn-edit { background: #003399; color: #fff; border: none; padding: 0.3rem 1.1rem; border-radius: 1rem; font-weight: 600; margin-right: 6px; cursor: pointer;}
-        .btn-edit:hover { background: #0a185f;}
-        .actions { display: flex; gap: 8px;}
-        ul { list-style: none; padding-left: 0;}
-        ul li { margin-bottom: 5px;}
-        form.inline { display: inline;}
-        .success, .danger { padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 1rem;}
-        .success { background: #e3ffe6; color: #197a3d;}
-        .danger { background: #ffdede; color: #a31212;}
-    </style>
+<meta charset="UTF-8" />
+<title>Painel Master | COOPEX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  /* Reset e base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #001f7a 0%, #004aad 100%);
+    color: #f0f4ff;
+    min-height: 100vh;
+  }
+  header {
+    background: #002e9c;
+    padding: 1.5rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.35);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  .logo-coopex {
+    width: 60px;
+    height: 60px;
+    background: url('/static/coopex_logo.png') no-repeat center center;
+    background-size: contain;
+    border-radius: 50%;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.35);
+    border: 2.5px solid #ffdb4d;
+  }
+  header h1 {
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: 0.04em;
+    text-shadow: 1px 1px 3px #001e6c;
+    margin: 0;
+  }
+  .logout {
+    background: #ffcc00;
+    color: #002b80;
+    font-weight: 900;
+    font-size: 1.2rem;
+    padding: 0.75rem 2rem;
+    border-radius: 40px;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgb(255 204 0 / 0.7);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .logout:hover {
+    background: #e6b800;
+    box-shadow: 0 8px 26px rgb(230 184 0 / 0.9);
+  }
+  .container {
+    max-width: 1250px;
+    margin: 3rem auto 4rem auto;
+    background: #0a2c82;
+    border-radius: 25px;
+    padding: 40px 50px;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.5);
+    color: #e2e8f0;
+  }
+  h2 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 1.8rem;
+    border-bottom: 3.5px solid #ffdb4d;
+    padding-bottom: 0.3rem;
+  }
+  .novo-btn {
+    background: #ffdb4d;
+    color: #002b80;
+    font-weight: 900;
+    padding: 1rem 3rem;
+    border-radius: 40px;
+    font-size: 1.25rem;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 2rem;
+    box-shadow: 0 7px 22px rgb(255 219 77 / 0.7);
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+  }
+  .novo-btn:hover {
+    background: #f2c500;
+    box-shadow: 0 10px 30px rgb(242 197 0 / 0.85);
+    transform: scale(1.05);
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 1rem;
+  }
+  th, td {
+    padding: 1.3rem 1.6rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  th {
+    background: #183c8a;
+    color: #ffdb4d;
+    text-align: left;
+    border-radius: 12px 12px 0 0;
+    letter-spacing: 0.02em;
+  }
+  tbody tr {
+    background: #122a7a;
+    border-radius: 15px;
+    box-shadow: 0 4px 18px rgb(0 0 0 / 0.55);
+    transition: box-shadow 0.25s ease;
+  }
+  tbody tr:hover {
+    box-shadow: 0 8px 30px rgb(255 219 77 / 0.6);
+  }
+  tbody tr td:first-child {
+    border-radius: 15px 0 0 15px;
+  }
+  tbody tr td:last-child {
+    border-radius: 0 15px 15px 0;
+  }
+  .actions {
+    display: flex;
+    gap: 1rem;
+  }
+  .btn-edit, .btn-danger {
+    cursor: pointer;
+    border: none;
+    font-weight: 800;
+    padding: 0.8rem 1.8rem;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    box-shadow: 0 6px 22px rgb(0 0 0 / 0.3);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+  }
+  .btn-edit {
+    background: #5a8fff;
+    color: #f0f4ff;
+    box-shadow: 0 7px 24px rgb(90 143 255 / 0.7);
+  }
+  .btn-edit:hover {
+    background: #2c63f6;
+    box-shadow: 0 10px 30px rgb(44 99 246 / 0.85);
+    transform: scale(1.1);
+  }
+  .btn-danger {
+    background: #ff4f4f;
+    color: #fff;
+    box-shadow: 0 7px 24px rgb(255 79 79 / 0.7);
+  }
+  .btn-danger:hover {
+    background: #cc0000;
+    box-shadow: 0 10px 30px rgb(204 0 0 / 0.85);
+    transform: scale(1.1);
+  }
+  form.inline {
+    display: inline;
+  }
+  .success {
+    background: #d4f8d4;
+    color: #004d00;
+    padding: 1.2rem 1.5rem;
+    border-radius: 18px;
+    margin-bottom: 2rem;
+    font-weight: 900;
+    box-shadow: 0 5px 20px rgb(20 100 20 / 0.5);
+    font-size: 1.15rem;
+  }
+  /* Responsividade */
+  @media (max-width: 900px) {
+    .actions {
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+    .btn-edit, .btn-danger {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+  }
+  @media (max-width: 720px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+      width: 100%;
+    }
+    thead tr {
+      display: none;
+    }
+    tbody tr {
+      margin-bottom: 1.4rem;
+      padding: 1.3rem;
+      border-radius: 20px;
+      background: #122a7a;
+      box-shadow: 0 8px 30px rgb(255 219 77 / 0.7);
+    }
+    tbody tr td {
+      padding-left: 55%;
+      position: relative;
+      text-align: right;
+      font-size: 1rem;
+    }
+    tbody tr td::before {
+      position: absolute;
+      left: 1.4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 900;
+      content: attr(data-label);
+      color: #ffdb4d;
+      font-size: 1rem;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+    tbody tr td:last-child {
+      border-radius: 0 20px 20px 0;
+    }
+  }
+</style>
 </head>
 <body>
-<div class="container">
+<header>
+  <div class="header-left">
+    <div class="logo-coopex"></div>
     <h1>Painel Master - COOPEX</h1>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="success">{{ messages[0] }}</div>
-      {% endif %}
-    {% endwith %}
-    <h2>Admins</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Nome</th><th>Usuário</th><th>Intervalo</th><th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for admin in admins %}
-            <tr>
-                <td>{{ admin.nome }}</td>
-                <td>{{ admin.username }}</td>
-                <td>
-                    {% if admin.intervalo_inicio and admin.intervalo_fim %}
-                        {{ dias_label[admin.intervalo_inicio] }} a {{ dias_label[admin.intervalo_fim] }}
-                    {% else %}-{% endif %}
-                </td>
-                <td>
-                    <form method="post" action="{{ url_for('excluir_admin', admin_id=admin.id) }}" class="inline"
-                     onsubmit="return confirm('Deseja excluir este admin?');">
-                        <button type="submit" class="btn-danger">Excluir</button>
-                    </form>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <h2>Cooperados</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Nome</th><th>Usuário</th><th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for c in cooperados %}
-            <tr>
-                <td>{{ c.nome }}</td>
-                <td>{{ c.username }}</td>
-                <td>
-                    <a href="{{ url_for('editar_cooperado', cooperado_id=c.id) }}" class="btn-edit">Editar</a>
-                    <form method="post" action="{{ url_for('excluir_cooperado', cooperado_id=c.id) }}" class="inline"
-                     onsubmit="return confirm('Excluir este cooperado?');">
-                        <button type="submit" class="btn-danger">Excluir</button>
-                    </form>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <h2>Contratos (Tipos de Valor/Desconto)</h2>
-    <form method="post" action="{{ url_for('cadastrar_tipo_lancamento') }}">
-        <input type="text" name="nome" placeholder="Nome do tipo" required>
-        <select name="tipo" required>
-            <option value="valor">Valor</option>
-            <option value="desconto">Desconto</option>
-        </select>
-        <button type="submit" class="btn-edit">Cadastrar</button>
-    </form>
-    <ul>
+  </div>
+  <a href="{{ url_for('logout') }}" class="logout">Sair</a>
+</header>
+
+<div class="container">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="success">{{ messages[0] }}</div>
+    {% endif %}
+  {% endwith %}
+
+  <h2>Contratos</h2>
+  <a href="{{ url_for('cadastro_admin') }}" class="novo-btn">Novo Contrato</a>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th><th>Usuário</th><th>Intervalo</th><th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for admin in admins %}
+      <tr>
+        <td data-label="Nome">{{ admin.nome }}</td>
+        <td data-label="Usuário">{{ admin.username }}</td>
+        <td data-label="Intervalo">
+          {% if admin.intervalo_inicio and admin.intervalo_fim %}
+            {{ dias_label[admin.intervalo_inicio] }} a {{ dias_label[admin.intervalo_fim] }}
+          {% else %}-{% endif %}
+        </td>
+        <td data-label="Ações" class="actions">
+          <a href="{{ url_for('editar_admin', admin_id=admin.id) }}" class="btn-edit">Editar</a>
+          <form method="post" action="{{ url_for('excluir_admin', admin_id=admin.id) }}" class="inline" onsubmit="return confirm('Deseja excluir este admin?');">
+            <button type="submit" class="btn-danger">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Cooperados</h2>
+  <a href="{{ url_for('cadastro_cooperado') }}" class="novo-btn">Novo Cooperado</a>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th><th>Usuário</th><th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in cooperados %}
+      <tr>
+        <td data-label="Nome">{{ c.nome }}</td>
+        <td data-label="Usuário">{{ c.username }}</td>
+        <td data-label="Ações" class="actions">
+          <a href="{{ url_for('editar_cooperado', cooperado_id=c.id) }}" class="btn-edit">Editar</a>
+          <form method="post" action="{{ url_for('excluir_cooperado', cooperado_id=c.id) }}" class="inline" onsubmit="return confirm('Excluir este cooperado?');">
+            <button type="submit" class="btn-danger">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Contratos (Tipos de Produção/Desconto)</h2>
+  <form method="post" action="{{ url_for('cadastrar_tipo_lancamento') }}" style="margin-bottom:2rem; display:flex; gap:1rem; flex-wrap: wrap; align-items:center;">
+    <input type="text" name="nome" placeholder="Nome do tipo" required style="flex:1; padding:1rem 1.4rem; border-radius:40px; border:2px solid #ffdb4d; font-size:1.15rem; font-weight:700; color:#002b80;" />
+    <select name="tipo" required style="padding:1rem 1.4rem; border-radius:40px; border:2px solid #ffdb4d; font-size:1.15rem; font-weight:700; color:#002b80;">
+      <option value="Produção">Produção</option>
+      <option value="desconto">Desconto</option>
+    </select>
+    <button type="submit" class="btn-edit" style="padding:1rem 2rem; font-size:1.15rem;">Cadastrar</button>
+  </form>
+  <ul style="padding-left: 0; list-style: none; margin-bottom: 3rem;">
     {% for tipo in tipos %}
-        <li>
-            {{ tipo.nome }} ({{ tipo.tipo }})
-            <form method="post" action="{{ url_for('excluir_tipo_lancamento', tipo_id=tipo.id) }}" class="inline"
-             onsubmit="return confirm('Excluir este contrato?');">
-                <button type="submit" class="btn-danger">Excluir</button>
-            </form>
-        </li>
+    <li style="margin-bottom: 1rem; background:#0f3a9a; box-shadow:0 5px 18px rgb(0 0 0 / 0.4); border-radius: 20px; padding: 1.1rem 1.4rem; display:flex; justify-content: space-between; align-items:center; font-size:1.1rem; font-weight:700; color:#ffdb4d;">
+      <span>{{ tipo.nome }} ({{ tipo.tipo }})</span>
+      <div class="actions">
+        <a href="{{ url_for('editar_tipo_lancamento', tipo_id=tipo.id) }}" class="btn-edit" style="font-size:1rem; padding:0.65rem 1.4rem;">Editar</a>
+        <form method="post" action="{{ url_for('excluir_tipo_lancamento', tipo_id=tipo.id) }}" class="inline" onsubmit="return confirm('Excluir este contrato?');">
+          <button type="submit" class="btn-danger" style="font-size:1rem; padding:0.65rem 1.4rem;">Excluir</button>
+        </form>
+      </div>
+    </li>
     {% endfor %}
-    </ul>
-    <h2>Lançamentos (Valores e Descontos)</h2>
-    <a href="{{ url_for('cadastro_valor') }}" class="btn-edit" style="margin-bottom:1.1rem;display:inline-block;">Novo Lançamento</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Data</th><th>Turno</th><th>Cooperado</th>
-                <th>Tipo</th><th>Contrato</th><th>Valor</th>
-                <th>Lançado por</th><th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for v in valores %}
-            <tr>
-                <td>{{ v.data.strftime('%d/%m/%Y') }}</td>
-                <td>{{ v.turno }}</td>
-                <td>{{ v.cooperado.nome }}</td>
-                <td>{{ v.tipo }}</td>
-                <td>{{ v.tipo_lancamento.nome if v.tipo_lancamento else '' }}</td>
-                <td>R$ {{ "%.2f"|format(v.valor) }}</td>
-                <td>{{ v.criador.nome if v.criador else '' }}</td>
-                <td class="actions">
-                    <a href="{{ url_for('editar_valor', valor_id=v.id) }}" class="btn-edit">Editar</a>
-                    <form method="post" action="{{ url_for('excluir_valor', valor_id=v.id) }}" class="inline"
-                      onsubmit="return confirm('Excluir este lançamento?');">
-                        <button type="submit" class="btn-danger">Excluir</button>
-                    </form>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+  </ul>
+
+  <h2>Lançamentos (Valores e Descontos)</h2>
+  <a href="{{ url_for('cadastro_valor') }}" class="novo-btn" style="margin-bottom:1.6rem;display:inline-block;">Novo Lançamento</a>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th><th>Turno</th><th>Cooperado</th>
+        <th>Tipo</th><th>Contrato</th><th>Valor</th>
+        <th>Lançado por</th><th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in valores %}
+      <tr>
+        <td data-label="Data">{{ v.data.strftime('%d/%m/%Y') }}</td>
+        <td data-label="Turno">{{ v.turno }}</td>
+        <td data-label="Cooperado">{{ v.cooperado.nome }}</td>
+        <td data-label="Tipo">{{ v.tipo }}</td>
+        <td data-label="Contrato">{{ v.tipo_lancamento.nome if v.tipo_lancamento else '' }}</td>
+        <td data-label="Valor">R$ {{ "%.2f"|format(v.valor) }}</td>
+        <td data-label="Lançado por">{{ v.criador.nome if v.criador else '' }}</td>
+        <td data-label="Ações" class="actions">
+          <a href="{{ url_for('editar_valor', valor_id=v.id) }}" class="btn-edit">Editar</a>
+          <form method="post" action="{{ url_for('excluir_valor', valor_id=v.id) }}" class="inline" onsubmit="return confirm('Excluir este lançamento?');">
+            <button type="submit" class="btn-danger">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 </body>
 </html>

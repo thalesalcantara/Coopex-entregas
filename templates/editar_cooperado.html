@@ -2,13 +2,13 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastrar Admin | COOPEX</title>
+    <title>Editar Cooperado | COOPEX</title>
     <style>
         body { background: linear-gradient(120deg, #003399 0%, #0a185f 100%); font-family: 'Segoe UI', Arial, sans-serif;}
         .container { max-width: 480px; margin: 40px auto; background: #fff; border-radius: 18px; box-shadow: 0 8px 40px #00339928; padding: 32px;}
         h1 { color: #003399; margin-bottom: 1.5rem;}
         label { color: #003399; margin-top: 12px; font-weight:600;}
-        input, select { width: 100%; padding: 9px; border-radius: 12px; border: 1px solid #c3d1ee; font-size: 1.08rem;}
+        input { width: 100%; padding: 9px; border-radius: 12px; border: 1px solid #c3d1ee; font-size: 1.08rem;}
         button { background: #003399; color: #fff; border: none; border-radius: 1rem; padding: 0.5rem 2rem; font-size: 1.12rem; font-weight:700; margin-top: 16px;}
         button:hover { background: #0a185f;}
         .success, .danger { padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 1rem;}
@@ -18,7 +18,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>Cadastrar Admin</h1>
+    <h1>Editar Cooperado</h1>
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <div class="success">{{ messages[0] }}</div>
@@ -26,25 +26,12 @@
     {% endwith %}
     <form method="post" autocomplete="off">
         <label for="nome">Nome</label>
-        <input type="text" name="nome" required maxlength="100">
+        <input type="text" name="nome" value="{{ cooperado.nome }}" required maxlength="100">
         <label for="username">Usuário</label>
-        <input type="text" name="username" required maxlength="50">
-        <label for="senha">Senha</label>
-        <input type="password" name="senha" required maxlength="50">
-        <label>Intervalo (dias de atuação)</label>
-        <select name="intervalo_inicio" required>
-            <option value="" disabled selected>Início</option>
-            {% for k,v in dias_label.items() %}
-                <option value="{{k}}">{{v}}</option>
-            {% endfor %}
-        </select>
-        <select name="intervalo_fim" required>
-            <option value="" disabled selected>Fim</option>
-            {% for k,v in dias_label.items() %}
-                <option value="{{k}}">{{v}}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Cadastrar</button>
+        <input type="text" name="username" value="{{ cooperado.username }}" required maxlength="50">
+        <label for="senha">Senha (deixe em branco para não alterar)</label>
+        <input type="password" name="senha" maxlength="50">
+        <button type="submit">Salvar Alterações</button>
     </form>
 </div>
 </body>

@@ -33,30 +33,32 @@ class User(UserMixin, db.Model):
 class TipoLancamento(db.Model):
     __tablename__ = 'tipos_lancamento'
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    tipo = db.Column(db.String(20), nullable=False)  # "valor" ou "desconto"
+    nome = db.Column(db.String(80), nullable=False)
+    tipo = db.Column(db.String(20), nullable=False)  # valor ou desconto
 
 class Valor(db.Model):
     __tablename__ = 'valores'
     id = db.Column(db.Integer, primary_key=True)
     cooperado_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    tipo_lancamento_id = db.Column(db.Integer, db.ForeignKey('tipos_lancamento.id'))
     valor = db.Column(db.Float, nullable=False)
     data = db.Column(db.Date, nullable=False)
     turno = db.Column(db.String(30), nullable=False)
     tipo = db.Column(db.String(20), nullable=False)  # valor ou desconto
     criado_por = db.Column(db.Integer, db.ForeignKey('users.id'))
-    tipo_lancamento_id = db.Column(db.Integer, db.ForeignKey('tipos_lancamento.id'), nullable=False)
 
     cooperado = db.relationship('User', foreign_keys=[cooperado_id])
     criador = db.relationship('User', foreign_keys=[criado_por])
-    tipo_lancamento = db.relationship('TipoLancamento')
+    tipo_lancamento = db.relationship('TipoLancamento', foreign_keys=[tipo_lancamento_id])
 
-# --- LOGIN MANAGER ---
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
-# --- CRIA TABELAS E USUÁRIO MASTER SE NÃO EXISTIREM ---
+dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']
+dias_label = {'seg':'Segunda', 'ter':'Terça', 'qua':'Quarta', 'qui':'Quinta',
+              'sex':'Sexta', 'sab':'Sábado', 'dom':'Domingo'}
+
 with app.app_context():
     db.create_all()
     if not User.query.filter_by(tipo='master').first():
@@ -72,11 +74,8 @@ with app.app_context():
         db.session.commit()
         print('Usuário master padrão criado: login "coopex" / senha "coopex05289"')
 
-dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']
-dias_label = {'seg':'Segunda', 'ter':'Terça', 'qua':'Quarta', 'qui':'Quinta',
-              'sex':'Sexta', 'sab':'Sábado', 'dom':'Domingo'}
+# ---- ROTAS ----
 
-# --- ROTAS ---
 @app.route("/", methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -96,7 +95,7 @@ def login():
                 flash("Tipo de usuário desconhecido!", "danger")
         else:
             flash("Usuário ou senha inválidos!", "danger")
-    return render_template("login.html", ano=datetime.now().year)
+    return render_template("login.html", now=datetime.now)
 
 @app.route("/logout")
 @login_required
@@ -104,73 +103,165 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# PAINEL MASTER
-@app.route("/painel_master", methods=["GET", "POST"])
+# --- Painel MASTER ---
+@app.route("/painel_master")
 @login_required
 def painel_master():
     if current_user.tipo != 'master':
         return redirect(url_for('login'))
     admins = User.query.filter_by(tipo='admin').all()
     cooperados = User.query.filter_by(tipo='cooperado').all()
+    tipos = TipoLancamento.query.all()
     valores = Valor.query.order_by(Valor.data.desc()).all()
-    tipos_valor = TipoLancamento.query.filter_by(tipo="valor").all()
-    tipos_desconto = TipoLancamento.query.filter_by(tipo="desconto").all()
-    tipos = TipoLancamento.query.order_by(TipoLancamento.tipo, TipoLancamento.nome).all()
-    relatorio_admins = {}
-    for admin in admins:
-        lancamentos = [v for v in valores if v.criador and v.criador.id == admin.id]
-        total_valor = sum(v.valor for v in lancamentos if v.tipo == 'valor')
-        total_desconto = sum(v.valor for v in lancamentos if v.tipo == 'desconto')
-        relatorio_admins[admin] = {
-            'lancamentos': lancamentos,
-            'total_valor': total_valor,
-            'total_desconto': total_desconto,
-            'total_liquido': total_valor - total_desconto,
-        }
     return render_template(
         "painel_master.html",
-        admins=admins,
-        cooperados=cooperados,
-        valores=valores,
-        relatorio_admins=relatorio_admins,
-        dias_label=dias_label,
-        tipos_valor=tipos_valor,
-        tipos_desconto=tipos_desconto,
-        tipos=tipos
+        admins=admins, cooperados=cooperados, tipos=tipos, valores=valores,
+        dias_label=dias_label
     )
 
+# --- Painel ADMIN ---
+@app.route("/painel_admin")
+@login_required
+def painel_admin():
+    if current_user.tipo != 'admin':
+        return redirect(url_for('login'))
+    cooperados = User.query.filter_by(tipo='cooperado').all()
+    valores = Valor.query.order_by(Valor.data.desc()).all()
+    return render_template(
+        "painel_admin.html",
+        cooperados=cooperados,
+        valores=valores,
+        admin=current_user
+    )
+
+# --- Painel COOPERADO ---
+@app.route("/painel_cooperado")
+@login_required
+def painel_cooperado():
+    if current_user.tipo != 'cooperado':
+        return redirect(url_for('login'))
+    valores = Valor.query.filter_by(cooperado_id=current_user.id).order_by(Valor.data.desc()).all()
+    return render_template(
+        "painel_cooperado.html",
+        valores=valores
+    )
+
+# --- Cadastro Admin ---
+@app.route("/cadastro_admin", methods=["GET", "POST"])
+@login_required
+def cadastro_admin():
+    if current_user.tipo != 'master':
+        return redirect(url_for('login'))
+    if request.method == "POST":
+        nome = request.form["nome"]
+        username = request.form["username"]
+        senha = request.form["senha"]
+        intervalo_inicio = request.form["intervalo_inicio"]
+        intervalo_fim = request.form["intervalo_fim"]
+        if User.query.filter_by(username=username).first():
+            flash("Já existe um usuário com esse login!", "danger")
+        else:
+            admin = User(
+                nome=nome,
+                username=username,
+                tipo='admin',
+                intervalo_inicio=intervalo_inicio,
+                intervalo_fim=intervalo_fim,
+            )
+            admin.set_password(senha)
+            db.session.add(admin)
+            db.session.commit()
+            flash("Admin cadastrado com sucesso!", "success")
+            return redirect(url_for('painel_master'))
+    return render_template("cadastro_admin.html", dias=dias, dias_label=dias_label)
+
+# --- Cadastro Cooperado ---
+@app.route("/cadastro_cooperado", methods=["GET", "POST"])
+@login_required
+def cadastro_cooperado():
+    if current_user.tipo not in ['master', 'admin']:
+        return redirect(url_for('login'))
+    if request.method == "POST":
+        nome = request.form["nome"]
+        username = request.form["username"]
+        senha = request.form["senha"]
+        if User.query.filter_by(username=username).first():
+            flash("Já existe um usuário com esse login!", "danger")
+        else:
+            cooperado = User(
+                nome=nome,
+                username=username,
+                tipo='cooperado'
+            )
+            cooperado.set_password(senha)
+            db.session.add(cooperado)
+            db.session.commit()
+            flash("Cooperado cadastrado com sucesso!", "success")
+            if current_user.tipo == 'admin':
+                return redirect(url_for('painel_admin'))
+            else:
+                return redirect(url_for('painel_master'))
+    return render_template("cadastro_cooperado.html")
+
+# --- Cadastro de Tipo de Lançamento (Contrato) ---
+@app.route("/cadastrar_tipo_lancamento", methods=["POST"])
+@login_required
+def cadastrar_tipo_lancamento():
+    if current_user.tipo != 'master':
+        return redirect(url_for('login'))
+    nome = request.form['nome']
+    tipo = request.form['tipo']
+    if TipoLancamento.query.filter_by(nome=nome, tipo=tipo).first():
+        flash("Tipo já cadastrado!", "danger")
+    else:
+        novo_tipo = TipoLancamento(nome=nome, tipo=tipo)
+        db.session.add(novo_tipo)
+        db.session.commit()
+        flash("Tipo de lançamento cadastrado!", "success")
+    return redirect(url_for('painel_master'))
+
+# --- Exclusão de Tipo de Lançamento ---
+@app.route("/excluir_tipo_lancamento/<int:tipo_id>", methods=["POST"])
+@login_required
+def excluir_tipo_lancamento(tipo_id):
+    if current_user.tipo != 'master':
+        return redirect(url_for('login'))
+    tipo = TipoLancamento.query.get(tipo_id)
+    if tipo:
+        db.session.delete(tipo)
+        db.session.commit()
+        flash("Contrato excluído!", "success")
+    return redirect(url_for('painel_master'))
+
+# --- Cadastro Valor/Desconto ---
 @app.route("/cadastro_valor", methods=["GET", "POST"])
 @login_required
 def cadastro_valor():
     if current_user.tipo not in ['master', 'admin']:
         return redirect(url_for('login'))
     cooperados = User.query.filter_by(tipo='cooperado').all()
-    tipos_valor = TipoLancamento.query.filter_by(tipo="valor").all()
-    tipos_desconto = TipoLancamento.query.filter_by(tipo="desconto").all()
+    tipos = TipoLancamento.query.all()
     if request.method == "POST":
         cooperado_id = request.form["cooperado_id"]
+        tipo_lancamento_id = request.form.get("tipo_lancamento_id")
         data_str = request.form["data"]
         turno = request.form["turno"]
         tipo = request.form["tipo"]
-        if tipo == "valor":
-            tipo_lancamento_id = request.form.get("tipo_lancamento_valor")
-        else:
-            tipo_lancamento_id = request.form.get("tipo_lancamento_desconto")
         valor_br = request.form["valor"]
         valor_num = float(valor_br.replace('R$', '').replace('.', '').replace(',', '.').strip())
         try:
             data = datetime.strptime(data_str, '%Y-%m-%d').date()
         except:
             flash("Data inválida!", "danger")
-            return render_template("cadastro_valor.html", cooperados=cooperados, now=datetime.now, tipos_valor=tipos_valor, tipos_desconto=tipos_desconto)
+            return render_template("cadastro_valor.html", cooperados=cooperados, tipos=tipos, now=datetime.now)
         novo = Valor(
             cooperado_id=cooperado_id,
+            tipo_lancamento_id=tipo_lancamento_id,
             valor=valor_num,
             data=data,
             turno=turno,
             tipo=tipo,
-            criado_por=current_user.id,
-            tipo_lancamento_id=tipo_lancamento_id
+            criado_por=current_user.id
         )
         db.session.add(novo)
         db.session.commit()
@@ -179,127 +270,127 @@ def cadastro_valor():
             return redirect(url_for('painel_admin'))
         else:
             return redirect(url_for('painel_master'))
-    return render_template("cadastro_valor.html", cooperados=cooperados, now=datetime.now, tipos_valor=tipos_valor, tipos_desconto=tipos_desconto)
+    return render_template("cadastro_valor.html", cooperados=cooperados, tipos=tipos, now=datetime.now)
 
-# EDITAR VALOR (ambos)
-@app.route("/editar_valor/<int:valor_id>", methods=["GET", "POST"])
+# --- Exclusão Admin/Cooperado/Valor ---
+@app.route("/excluir_admin/<int:admin_id>", methods=["POST"])
 @login_required
-def editar_valor(valor_id):
-    if current_user.tipo not in ['master', 'admin']:
+def excluir_admin(admin_id):
+    if current_user.tipo != 'master':
         return redirect(url_for('login'))
-    valor = Valor.query.get_or_404(valor_id)
-    cooperados = User.query.filter_by(tipo='cooperado').all()
-    tipos_valor = TipoLancamento.query.filter_by(tipo="valor").all()
-    tipos_desconto = TipoLancamento.query.filter_by(tipo="desconto").all()
-    if request.method == "POST":
-        valor.cooperado_id = request.form["cooperado_id"]
-        valor.data = datetime.strptime(request.form["data"], '%Y-%m-%d').date()
-        valor.turno = request.form["turno"]
-        valor.tipo = request.form["tipo"]
-        if valor.tipo == "valor":
-            valor.tipo_lancamento_id = request.form.get("tipo_lancamento_valor")
-        else:
-            valor.tipo_lancamento_id = request.form.get("tipo_lancamento_desconto")
-        valor.valor = float(request.form["valor"].replace('R$', '').replace('.', '').replace(',', '.').strip())
+    admin = User.query.get(admin_id)
+    if admin:
+        db.session.delete(admin)
         db.session.commit()
-        flash("Lançamento editado com sucesso!", "success")
-        if current_user.tipo == 'admin':
-            return redirect(url_for('painel_admin'))
-        else:
-            return redirect(url_for('painel_master'))
-    return render_template("editar_valor.html", valor=valor, cooperados=cooperados, tipos_valor=tipos_valor, tipos_desconto=tipos_desconto)
+        flash("Admin excluído!", "success")
+    return redirect(url_for('painel_master'))
 
-# EXCLUIR VALOR (ambos)
-@app.route('/excluir_valor/<int:valor_id>', methods=['POST'])
+@app.route("/excluir_cooperado/<int:cooperado_id>", methods=["POST"])
+@login_required
+def excluir_cooperado(cooperado_id):
+    if current_user.tipo != 'master':
+        return redirect(url_for('login'))
+    c = User.query.get(cooperado_id)
+    if c:
+        db.session.delete(c)
+        db.session.commit()
+        flash("Cooperado excluído!", "success")
+    return redirect(url_for('painel_master'))
+
+@app.route("/excluir_valor/<int:valor_id>", methods=["POST"])
 @login_required
 def excluir_valor(valor_id):
-    if current_user.tipo not in ['master', 'admin']:
-        return redirect(url_for('login'))
-    valor = Valor.query.get_or_404(valor_id)
-    db.session.delete(valor)
-    db.session.commit()
-    flash("Lançamento excluído!", "success")
-    if current_user.tipo == 'admin':
-        return redirect(url_for('painel_admin'))
-    else:
+    v = Valor.query.get(valor_id)
+    if v:
+        db.session.delete(v)
+        db.session.commit()
+        flash("Lançamento excluído!", "success")
+    if current_user.tipo == "master":
         return redirect(url_for('painel_master'))
+    else:
+        return redirect(url_for('painel_admin'))
 
-# Rotas de contratos e cooperados (editar/excluir) — só master!
+# --- Editar Admin/Cooperado/Valor/Contrato ---
+@app.route("/editar_admin/<int:admin_id>", methods=["GET", "POST"])
+@login_required
+def editar_admin(admin_id):
+    if current_user.tipo != 'master':
+        return redirect(url_for('login'))
+    admin = User.query.get(admin_id)
+    if not admin or admin.tipo != "admin":
+        return redirect(url_for('painel_master'))
+    if request.method == "POST":
+        admin.nome = request.form["nome"]
+        admin.username = request.form["username"]
+        admin.intervalo_inicio = request.form["intervalo_inicio"]
+        admin.intervalo_fim = request.form["intervalo_fim"]
+        senha = request.form["senha"]
+        if senha:
+            admin.set_password(senha)
+        db.session.commit()
+        flash("Admin atualizado!", "success")
+        return redirect(url_for('painel_master'))
+    return render_template("editar_admin.html", admin=admin, dias=dias, dias_label=dias_label)
+
 @app.route("/editar_cooperado/<int:cooperado_id>", methods=["GET", "POST"])
 @login_required
 def editar_cooperado(cooperado_id):
     if current_user.tipo != 'master':
-        flash("Só o master pode editar cooperado.", "danger")
+        return redirect(url_for('login'))
+    cooperado = User.query.get(cooperado_id)
+    if not cooperado or cooperado.tipo != "cooperado":
         return redirect(url_for('painel_master'))
-    cooperado = User.query.get_or_404(cooperado_id)
     if request.method == "POST":
         cooperado.nome = request.form["nome"]
         cooperado.username = request.form["username"]
-        if request.form["senha"]:
-            cooperado.set_password(request.form["senha"])
+        senha = request.form["senha"]
+        if senha:
+            cooperado.set_password(senha)
         db.session.commit()
-        flash("Cooperado editado!", "success")
+        flash("Cooperado atualizado!", "success")
         return redirect(url_for('painel_master'))
     return render_template("editar_cooperado.html", cooperado=cooperado)
 
-@app.route('/excluir_cooperado/<int:cooperado_id>', methods=['POST'])
+@app.route("/editar_valor/<int:valor_id>", methods=["GET", "POST"])
 @login_required
-def excluir_cooperado(cooperado_id):
-    if current_user.tipo != 'master':
-        flash("Só o master pode excluir cooperado.", "danger")
-        return redirect(url_for('painel_master'))
-    cooperado = User.query.get_or_404(cooperado_id)
-    db.session.delete(cooperado)
-    db.session.commit()
-    flash("Cooperado excluído!", "success")
-    return redirect(url_for('painel_master'))
-
-@app.route('/excluir_admin/<int:admin_id>', methods=['POST'])
-@login_required
-def excluir_admin(admin_id):
-    if current_user.tipo != 'master':
-        flash("Apenas o master pode excluir admins.", "danger")
-        return redirect(url_for('painel_master'))
-    admin = User.query.get(admin_id)
-    if admin and admin.tipo == 'admin':
-        db.session.delete(admin)
+def editar_valor(valor_id):
+    valor = Valor.query.get(valor_id)
+    cooperados = User.query.filter_by(tipo='cooperado').all()
+    tipos = TipoLancamento.query.all()
+    if request.method == "POST":
+        valor.cooperado_id = request.form["cooperado_id"]
+        valor.tipo_lancamento_id = request.form.get("tipo_lancamento_id")
+        valor.data = datetime.strptime(request.form["data"], '%Y-%m-%d').date()
+        valor.turno = request.form["turno"]
+        valor.tipo = request.form["tipo"]
+        valor.valor = float(request.form["valor"].replace('R$', '').replace('.', '').replace(',', '.').strip())
         db.session.commit()
-        flash('Admin excluído com sucesso!', 'success')
-    else:
-        flash('Admin não encontrado.', 'danger')
-    return redirect(url_for('painel_master'))
+        flash("Lançamento atualizado!", "success")
+        if current_user.tipo == "master":
+            return redirect(url_for('painel_master'))
+        else:
+            return redirect(url_for('painel_admin'))
+    return render_template("editar_valor.html", valor=valor, cooperados=cooperados, tipos=tipos, now=datetime.now)
 
-@app.route('/excluir_tipo_lancamento/<int:tipo_id>', methods=['POST'])
+@app.route("/editar_tipo_lancamento/<int:tipo_id>", methods=["GET", "POST"])
 @login_required
-def excluir_tipo_lancamento(tipo_id):
+def editar_tipo_lancamento(tipo_id):
     if current_user.tipo != 'master':
-        flash("Só o master pode excluir contratos!", "danger")
-        return redirect(url_for('painel_master'))
-    tipo = TipoLancamento.query.get(tipo_id)
-    if tipo:
-        db.session.delete(tipo)
-        db.session.commit()
-        flash('Contrato excluído!', 'success')
-    else:
-        flash('Contrato não encontrado.', 'danger')
-    return redirect(url_for('painel_master'))
-
-@app.route("/cadastrar_tipo_lancamento", methods=["POST"])
-@login_required
-def cadastrar_tipo_lancamento():
-    if current_user.tipo not in ['master', 'admin']:
         return redirect(url_for('login'))
-    nome = request.form["nome"]
-    tipo = request.form["tipo"]
-    if TipoLancamento.query.filter_by(nome=nome, tipo=tipo).first():
-        flash("Já existe um lançamento com esse nome/tipo!", "danger")
-    else:
-        novo = TipoLancamento(nome=nome, tipo=tipo)
-        db.session.add(novo)
+    tipo = TipoLancamento.query.get(tipo_id)
+    if not tipo:
+        return redirect(url_for('painel_master'))
+    if request.method == "POST":
+        tipo.nome = request.form["nome"]
+        tipo.tipo = request.form["tipo"]
         db.session.commit()
-        flash("Tipo cadastrado!", "success")
-    return redirect(url_for('painel_master'))
+        flash("Tipo de lançamento atualizado!", "success")
+        return redirect(url_for('painel_master'))
+    return render_template("editar_tipo_lancamento.html", tipo=tipo)
 
-# --- MAIN ---
+@app.errorhandler(401)
+def unauthorized(e):
+    return redirect(url_for('login'))
+
 if __name__ == '__main__':
     app.run(debug=True)
